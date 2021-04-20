@@ -21,5 +21,10 @@
         "jest": true
       }
     }
-  ]
+  ],
+  "rules": {
+    "no-void": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
+    "@typescript-eslint/strict-boolean-expressions": "off"
+  }
 }
