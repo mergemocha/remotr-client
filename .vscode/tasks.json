@@ -1,0 +1,43 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+    {
+      "type": "npm",
+      "script": "serve",
+      "problemMatcher": [],
+      "label": "npm: serve",
+      "detail": "vue-cli-service serve"
+    },
+    {
+      "type": "npm",
+      "script": "lint",
+      "problemMatcher": [
+        "$eslint-stylish"
+      ],
+      "label": "npm: lint",
+      "detail": "vue-cli-service lint"
+    },
+    {
+      "type": "npm",
+      "script": "build",
+      "group": "build",
+      "problemMatcher": [],
+      "label": "npm: build",
+      "detail": "vue-cli-service build"
+    },
+    {
+      "type": "npm",
+      "script": "test:unit",
+      "problemMatcher": [],
+      "label": "npm: test:unit",
+      "detail": "vue-cli-service test:unit"
+    },
+    {
+      "type": "npm",
+      "script": "test:e2e",
+      "problemMatcher": [],
+      "label": "npm: test:e2e",
+      "detail": "vue-cli-service test:e2e"
+    }
+  ]
+}

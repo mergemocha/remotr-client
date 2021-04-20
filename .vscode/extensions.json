@@ -1,0 +1,18 @@
+{
+  "recommendations": [
+    "formulahendry.auto-rename-tag",
+    "riccardonovaglia.missinglineendoffile",
+    "dbaeumer.vscode-eslint",
+    "github.vscode-pull-request-github",
+    "eamodio.gitlens",
+    "eg2.vscode-npm-script",
+    "christian-kohler.npm-intellisense",
+    "wayou.vscode-todo-highlight",
+    "ipatalas.vscode-postfix-ts",
+    "pflannery.vscode-versionlens",
+    "octref.vetur",
+    "visualstudioexptteam.vscodeintellicode",
+    "redhat.vscode-yaml",
+    "gruntfuggly.todo-tree"
+  ]
+}
