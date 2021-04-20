@@ -1,0 +1,33 @@
+name: Pull request validation
+
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+      - uses: actions/cache@v2
+        with:
+          path: ~/.npm
+          key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-node-
+      - name: Install npm@latest
+        run: sudo npm i -g npm
+      - name: Install dependencies
+        run: npm i
+      - name: Lint
+        run: npm run lint
+      - name: Build
+        run: npm run build
+      - name: Run unit tests
+        run: npm run test:unit
+      - name: Run end-to-end tests
+        run: npm run test:e2e-ci
+        env:
+          CYPRESS_KEY: ${{ secrets.CYPRESS_KEY }}
