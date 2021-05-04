@@ -1,31 +1,34 @@
-import Daemon from '@/types/Daemon'
-import { InjectionKey } from 'vue'
-import { createStore, useStore as baseUseStore, Store } from 'vuex'
+import { createStore } from 'vuex'
+import router from '../router'
+import Daemon from '../types/Daemon'
 
 export interface State {
   token: string | null,
-  daemons: Daemon[]
+  daemons: Daemon[],
+  commandSettingsVisible: boolean
 }
 
-export const key: InjectionKey<Store<State>> = Symbol('State injection key')
-
-export const store = createStore<State>({
+export default createStore<State>({
   state: {
     token: null,
-    daemons: []
+    daemons: [],
+    commandSettingsVisible: false
   },
   mutations: {
-    setToken (state, token: string) {
+    login (state, token: string) {
       state.token = token
+    },
+    logout (state) {
+      state.token = null
+      router.push('login') // Navigate to login
     },
     setDaemons (state, daemons: Daemon[]) {
       state.daemons = daemons
+    },
+    toggleCommandSettingsVisible (state) {
+      state.commandSettingsVisible = !state.commandSettingsVisible
     }
   },
   actions: {},
   modules: {}
 })
-
-export function useStore (): Store<State> {
-  return baseUseStore(key)
-}
