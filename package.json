@@ -12,16 +12,21 @@
   "dependencies": {
     "@coreui/coreui": "^3.4.0",
     "@coreui/vue": "^3.2.9",
+    "@vuelidate/core": "*",
+    "@vuelidate/validators": "*",
+    "axios": "^0.21.1",
     "core-js": "^3.11.1",
     "primeflex": "^2.0.0",
     "primeicons": "^4.1.0",
     "primevue": "^3.3.5",
     "vue": "^3.0.0",
     "vue-class-component": "^8.0.0-0",
+    "vuelidate": "^0.7.6",
     "vuex": "^4.0.0-0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
+    "@types/vuelidate": "^0.7.14",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "@vue/cli-plugin-babel": "^4.5.12",
