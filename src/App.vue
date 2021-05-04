@@ -1,26 +1,22 @@
 <template>
   <login></login>
+  <Main/>
 </template>
 
 <script lang="ts">
+import './assets/scss/style.scss'
+
 import { Options, Vue } from 'vue-class-component'
 import Login from './components/Login.vue'
+import Main from './views/Main.vue'
 
 @Options({
   components: {
     Login
+    Main
   }
 })
 export default class App extends Vue {}
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style scoped></style>
