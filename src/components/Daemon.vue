@@ -43,37 +43,37 @@
           class="action-button p-m-1 p-button-success"
           icon="pi pi-power-off"
           label="Boot"
-          @click="runQuickAction('boot')"
+          @click="runBackgroundAction('boot', getOpCtx())"
         />
         <ActionButton
           split="true"
           class="action-button p-m-1 p-button-info"
           icon="pi pi-lock"
           label="Log out"
-          :items="items"
-          @click="runQuickAction('logout')"
+          :items="getOptionsForOp('logout')"
+          @click="runBackgroundAction('logout', getOpCtx())"
         />
         <ActionButton
           split="true"
           class="action-button p-m-1 p-button-warning"
           icon="pi pi-refresh"
           label="Reboot"
-          :items="items"
-          @click="runQuickAction('reboot')"
+          :items="getOptionsForOp('reboot')"
+          @click="runBackgroundAction('reboot', getOpCtx())"
         />
         <ActionButton
           split="true"
           class="action-button p-m-1 p-button-danger"
           icon="pi pi-power-off"
           label="Shutdown"
-          :items="items"
-          @click="runQuickAction('shutdown')"
+          :items="getOptionsForOp('shutdown')"
+          @click="runBackgroundAction('shutdown', getOpCtx())"
         />
         <ActionButton
           class="action-button p-m-1 p-button-help"
           icon="pi pi-refresh"
           label="Restart daemon"
-          @click="runQuickAction('restart')"
+          @click="runBackgroundAction('restart', getOpCtx())"
         />
       </div>
     </template>
@@ -83,14 +83,10 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component'
 import Card from 'primevue/card'
-import { deleteCookie } from 'cookies-utils'
 import CopyableProperty from './CopyableProperty.vue'
 import ActionButton, { ActionButtonOption } from './ActionButton.vue'
-import store from '../store'
 import { DaemonOp } from '../types/Daemon'
-import { boot, logout, reboot, shutdown, restart } from '../system/daemonActions'
-import { determineRequestErrorReason, RequestFailureReason, ResponseCode } from '@/system/apiUtils'
-import Toast from '../types/Toast'
+import runBackgroundAction, { OpCtx } from '../system/runBackgroundAction'
 
 class Props {
   ip!: string
@@ -107,102 +103,28 @@ class Props {
   }
 })
 export default class Daemon extends Vue.with(Props) {
-  items: ActionButtonOption[] = [
-    {
-      label: 'Advanced settings',
-      icon: 'pi pi-sliders-v',
-      command: (): void => store.commit('toggleCommandSettingsVisible')
-    }
-  ]
+  runBackgroundAction = runBackgroundAction // Re-export for the component to use
 
-  /**
-   * Runs a daemon op without any parameters specified (i.e. fallbacking to defaults).
-   */
-  runQuickAction (action: DaemonOp): void {
-    // Having to do this the old-fashioned way because we can't use async/await in Vue renders
-    switch (action) {
-      case 'boot':
-        boot(this.mac)
-          .then(() => this.logActionSuccess(`Boot packet sent to ${this.user}@${this.hostname} (${this.mac}).`))
-          .catch(err => this.logActionError(err))
-        break
-      case 'logout':
-        logout(this.mac)
-          .then(() => this.logActionSuccess(`Logout request sent to ${this.user}@${this.hostname} (${this.mac}).`))
-          .catch(err => this.logActionError(err))
-        break
-      case 'reboot':
-        reboot(this.mac)
-          .then(() => this.logActionSuccess(`Reboot request sent to ${this.user}@${this.hostname} (${this.mac}).`))
-          .catch(err => this.logActionError(err))
-        break
-      case 'shutdown':
-        shutdown(this.mac)
-          .then(() => this.logActionSuccess(`Shutdown request sent to ${this.user}@${this.hostname} (${this.mac}).`))
-          .catch(err => this.logActionError(err))
-        break
-      case 'restart':
-        restart(this.mac)
-          .then(() => this.logActionSuccess(`Daemon restart issued on ${this.user}@${this.hostname} (${this.mac}).`))
-          .catch(err => this.logActionError(err))
-        break
-    }
-  }
-
-  /**
-   * Promise resolution shorthand to log that an action succeeded.
-   *
-   * @param message - Success toast message.
-   * @param summary - Optional toast title.
-   */
-  logActionSuccess (message: string, summary?: string): void {
-    this.$toast.add({ severity: 'success', summary: summary || 'Success', detail: message, life: 3000 })
-  }
-
-  /**
-   * Promise rejection shorthand to log than an operation failed.
-   *
-   * @param err - Request error object.
-   */
-  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
-  logActionError (err: any): void {
-    const { reason, code } = determineRequestErrorReason(err)
-
-    if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE) {
-      const toast: Toast = { severity: 'error', life: 3000 }
-
-      switch (code) {
-        case ResponseCode.UNAUTHORIZED:
-          toast.summary = 'Session expired'
-          toast.detail = 'Your session has expired, and you will need to log in again. Logging out in 3 seconds...'
-          setTimeout(() => {
-            deleteCookie('connect.sid')
-            this.$router.push('/login')
-          }, 3000)
-          break
-        case ResponseCode.NOT_FOUND:
-          toast.summary = 'Daemon not found'
-          toast.detail = `Daemon ${this.user}@${this.hostname} (${this.mac}) not found. The daemon may have been deregistered.`
-          break
-        case ResponseCode.TOO_MANY_REQUESTS:
-          toast.summary = 'Too many requests'
-          toast.detail = 'You\'re issuing commands too quickly. Please wait a moment and try again.'
-          break
-        case ResponseCode.INTERNAL_SERVER_ERROR:
-          toast.summary = 'Server error'
-          toast.detail = 'The server reported an unspecified error. Please try again later.'
-          break
-        case ResponseCode.ORIGIN_IS_UNREACHABLE:
-          toast.summary = 'Daemon is unreachable'
-          toast.detail = 'The daemon is not responding, and is probably offline.'
-          break
-        case ResponseCode.DAEMON_RETURNED_ERROR:
-          toast.summary = 'Daemon reported error'
-          toast.detail = `The daemon reported that your request could not be fulfilled. Details: ${err.response.data.error}`
-          break
+  getOptionsForOp (op: DaemonOp): ActionButtonOption[] {
+    return [
+      {
+        label: 'Run with custom settings',
+        icon: 'pi pi-sliders-v',
+        command: (): void => this.$store.commit('toggleCommandSettingsVisible', { op, opCtx: this.getOpCtx() })
       }
+    ]
+  }
 
-      this.$toast.add(toast)
+  getOpCtx (): OpCtx {
+    const { mac, ip, user, hostname, $toast, $router } = this
+
+    return {
+      mac,
+      ip,
+      user,
+      hostname,
+      toastService: $toast,
+      router: $router
     }
   }
 }

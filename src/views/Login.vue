@@ -2,14 +2,41 @@
 <div class="login-container">
   <div class="Title"><h1>Remotr</h1></div>
     <div class="p-field">
-      <InputText id="username" type="text" placeholder="Username" :class="{'p-invalid':isUserEmpty || isInv}" @keyup="onKeyPress($event, 'username')" v-model="username"/>
-      <small v-if="v$.username.$invalid && isUserEmpty" class="p-error">Username required</small>
+      <InputText
+        id="username"
+        type="text"
+        placeholder="Username"
+        :class="{'p-invalid': isUserEmpty || isInv}"
+        @keyup="onKeyPress($event, 'username')"
+        v-model="username"
+      />
+      <small
+        v-if="v$.username.$invalid && isUserEmpty"
+        class="p-error"
+      >
+        Username required
+      </small>
     </div>
     <div class="p-field">
-      <Password id="password" placeholder="Password" :class="{'p-invalid':isPassEmpty || isInv}" @keyup="onKeyPress($event, 'password')" v-model="password" :feedback="false" toggleMask/>
-      <small v-if="v$.password.$invalid && isPassEmpty" class="p-error">Password required</small>
+      <Password
+        id="password"
+        placeholder="Password"
+        :class="{'p-invalid': isPassEmpty || isInv}"
+        @keyup="onKeyPress($event, 'password')"
+        v-model="password"
+        :feedback="false"
+        toggleMask
+      />
+      <small
+        v-if="v$.password.$invalid && isPassEmpty"
+        class="p-error"
+      >
+        Password required
+      </small>
     </div>
-    <div class="login-button"><small v-if="isInv" class="p-error">Username or password is invalid.</small></div>
+    <div class="login-button">
+      <small v-if="isInv" class="p-error">Username or password is invalid.</small>
+    </div>
     <Button label="Log in" @click="validate($event)"/>
   </div>
 </template>
@@ -52,6 +79,7 @@ axios.defaults.withCredentials = true
   methods: {
     validate () {
       this.v$.$validate()
+
       if (this.v$.username.$error) {
         if (!this.v$.password.$error) this.isPassEmpty = false
         this.isUserEmpty = true
@@ -104,16 +132,10 @@ axios.defaults.withCredentials = true
     }
   }
 })
-
 export default class Login extends Vue {}
 </script>
 
 <style lang="scss" scoped>
-@import '~primevue/resources/themes/md-light-indigo/theme.css';
-@import '~primevue/resources/primevue.min.css';
-@import '~primeflex/primeflex.css';
-@import '~primeicons/primeicons.css';
-
 .login-container {
   width: fit-content;
   height: fit-content;

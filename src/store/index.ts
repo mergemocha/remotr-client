@@ -1,22 +1,36 @@
+import { OpCtx } from '@/system/runBackgroundAction'
 import { createStore } from 'vuex'
-import Daemon from '../types/Daemon'
+import Daemon, { DaemonOp } from '../types/Daemon'
+
+export interface CommandSettings {
+  op?: DaemonOp
+  opCtx?: OpCtx
+  visible: boolean
+}
 
 export interface GlobalState {
   daemons: Daemon[],
-  commandSettingsVisible: boolean
+  commandSettings: CommandSettings
 }
 
 export default createStore<GlobalState>({
   state: {
     daemons: [],
-    commandSettingsVisible: false
+    commandSettings: {
+      op: undefined,
+      opCtx: undefined,
+      visible: false
+    }
   },
   mutations: {
     setDaemons (state, daemons: Daemon[]) {
       state.daemons = daemons
     },
-    toggleCommandSettingsVisible (state) {
-      state.commandSettingsVisible = !state.commandSettingsVisible
+    toggleCommandSettingsVisible (state, settings: CommandSettings) {
+      state.commandSettings = {
+        ...settings,
+        visible: !state.commandSettings.visible
+      }
     }
   },
   actions: {},
