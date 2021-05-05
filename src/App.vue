@@ -1,5 +1,4 @@
 <template>
-  <login></login>
   <Main/>
 </template>
 
