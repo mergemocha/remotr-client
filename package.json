@@ -10,6 +10,10 @@
     "test:e2e-ci": "vue-cli-service test:e2e --headless --record --key $CYPRESS_KEY"
   },
   "dependencies": {
+    "@coreui/coreui": "^3.4.0",
+    "@coreui/vue": "^3.2.9",
+    "@vuelidate/core": "*",
+    "@vuelidate/validators": "*",
     "axios": "^0.21.1",
     "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.11.1",
@@ -19,10 +23,12 @@
     "vue": "^3.0.0",
     "vue-class-component": "^8.0.0-0",
     "vue-router": "^4.0.0-0",
+    "vuelidate": "^0.7.6",
     "vuex": "^4.0.0-0"
   },
   "devDependencies": {
     "@types/jest": "^26.0.23",
+    "@types/vuelidate": "^0.7.14",
     "@typescript-eslint/eslint-plugin": "^4.22.0",
     "@typescript-eslint/parser": "^4.22.0",
     "@vue/cli-plugin-babel": "^4.5.12",
