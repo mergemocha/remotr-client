@@ -1,27 +1,17 @@
 import { createStore } from 'vuex'
-import router from '../router'
 import Daemon from '../types/Daemon'
 
-export interface State {
-  token: string | null,
+export interface GlobalState {
   daemons: Daemon[],
   commandSettingsVisible: boolean
 }
 
-export default createStore<State>({
+export default createStore<GlobalState>({
   state: {
-    token: null,
     daemons: [],
     commandSettingsVisible: false
   },
   mutations: {
-    login (state, token: string) {
-      state.token = token
-    },
-    logout (state) {
-      state.token = null
-      router.push('/login') // Navigate to login
-    },
     setDaemons (state, daemons: Daemon[]) {
       state.daemons = daemons
     },

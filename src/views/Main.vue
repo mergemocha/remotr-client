@@ -16,7 +16,7 @@
     <div v-if="!hasFetched">
       <DummyDaemon/>
     </div>
-    <div v-else-if="hasFetched && daemons?.length == 0">
+    <div v-else-if="hasFetched && $store.daemons?.length == 0">
       <Message severity="success" :closable="false">
         <div class="empty">
           <h3>Hm. There doesn't seem to be anything here.</h3>
@@ -26,7 +26,7 @@
         </div>
       </Message>
     </div>
-    <div v-else v-for="daemon in daemons" :key="daemon.mac">
+    <div v-else v-for="daemon in $store.state.daemons" :key="daemon.mac">
       <Daemon :ip="daemon.ip" :mac="daemon.mac" :user="daemon.user" :hostname="daemon.hostname" />
     </div>
   </div>
@@ -46,6 +46,7 @@ import { API_BASE_URL, determineRequestErrorReason, joinUrl, RequestFailureReaso
 import store from '../store'
 import logHTTPRequestError from '../utils/logHTTPRequestError'
 import IDaemon from '../types/Daemon'
+import { deleteCookie } from 'cookies-utils'
 
 @Options({
   components: {
@@ -59,17 +60,16 @@ import IDaemon from '../types/Daemon'
 })
 export default class Main extends Vue {
   hasFetched = false
-  daemons: IDaemon[] = []
   interval: number | undefined = undefined
 
   updateDaemons (daemons: IDaemon[]): void {
     store.commit('setDaemons', daemons)
     this.hasFetched = true
-    this.daemons = daemons
   }
 
   logout (): void {
-    store.commit('logout')
+    deleteCookie('connect.sid')
+    this.$router.push('/login')
   }
 
   async mounted (): Promise<void> {
@@ -89,11 +89,11 @@ export default class Main extends Vue {
           const { reason, code } = determineRequestErrorReason(err)
 
           if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE && code === ResponseCode.UNAUTHORIZED) {
-            this.$toast.add({ severity: 'error', summary: 'Session expired', detail: 'Your session has expired, and you will need to log in again. Logging out in 3 seconds...' })
-            setTimeout(() => store.commit('logout'), 3000)
+            this.$toast.add({ severity: 'error', summary: 'Session expired', detail: 'Your session has expired, and you will need to log in again. Logging out in 3 seconds...', life: 3000 })
+            setTimeout(this.logout, 3000)
           } else {
             logHTTPRequestError(err)
-            this.$toast.add({ severity: 'error', summary: 'Could not fetch daemons', detail: 'Could not fetch new daemon data. Details have been outputted into the log.' })
+            this.$toast.add({ severity: 'error', summary: 'Could not fetch daemons', detail: 'Could not fetch new daemon data. Details have been outputted into the log.', life: 3000 })
           }
         }
       }, 5000)
@@ -101,9 +101,11 @@ export default class Main extends Vue {
       const { reason, code } = determineRequestErrorReason(err)
 
       if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE && code === ResponseCode.UNAUTHORIZED) {
-        store.commit('logout')
+        this.logout()
       } else {
+        this.$toast.add({ severity: 'error', summary: 'Cannot connect to server for authentication', detail: 'We cannot connect you to the server for authentication. For security reasons, you will be logged out in 3 seconds.', life: 3000 })
         logHTTPRequestError(err)
+        setTimeout(this.logout, 3000)
       }
     }
   }

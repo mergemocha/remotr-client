@@ -15,6 +15,7 @@
     "@vuelidate/core": "*",
     "@vuelidate/validators": "*",
     "axios": "^0.21.1",
+    "cookies-utils": "^1.0.0",
     "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.11.1",
     "primeflex": "^2.0.0",

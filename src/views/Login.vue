@@ -80,7 +80,6 @@ axios.defaults.withCredentials = true
         })
 
         if (response.status === 200) {
-          console.log(response.statusText)
           this.isInv = false
           router.push('/')
         }

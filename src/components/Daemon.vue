@@ -83,6 +83,7 @@
 <script lang="ts">
 import { Options, Vue } from 'vue-class-component'
 import Card from 'primevue/card'
+import { deleteCookie } from 'cookies-utils'
 import CopyableProperty from './CopyableProperty.vue'
 import ActionButton, { ActionButtonOption } from './ActionButton.vue'
 import store from '../store'
@@ -174,7 +175,10 @@ export default class Daemon extends Vue.with(Props) {
         case ResponseCode.UNAUTHORIZED:
           toast.summary = 'Session expired'
           toast.detail = 'Your session has expired, and you will need to log in again. Logging out in 3 seconds...'
-          setTimeout(() => store.commit('logout'), 3000)
+          setTimeout(() => {
+            deleteCookie('connect.sid')
+            this.$router.push('/login')
+          }, 3000)
           break
         case ResponseCode.NOT_FOUND:
           toast.summary = 'Daemon not found'
