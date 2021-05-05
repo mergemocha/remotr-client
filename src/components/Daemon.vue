@@ -114,6 +114,9 @@ export default class Daemon extends Vue.with(Props) {
     }
   ]
 
+  /**
+   * Runs a daemon op without any parameters specified (i.e. fallbacking to defaults).
+   */
   runQuickAction (action: DaemonOp): void {
     // Having to do this the old-fashioned way because we can't use async/await in Vue renders
     switch (action) {
@@ -145,10 +148,21 @@ export default class Daemon extends Vue.with(Props) {
     }
   }
 
-  logActionSuccess (message: string): void {
-    this.$toast.add({ severity: 'success', summary: 'Success', detail: message, life: 3000 })
+  /**
+   * Promise resolution shorthand to log that an action succeeded.
+   *
+   * @param message - Success toast message.
+   * @param summary - Optional toast title.
+   */
+  logActionSuccess (message: string, summary?: string): void {
+    this.$toast.add({ severity: 'success', summary: summary || 'Success', detail: message, life: 3000 })
   }
 
+  /**
+   * Promise rejection shorthand to log than an operation failed.
+   *
+   * @param err - Request error object.
+   */
   // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
   logActionError (err: any): void {
     const { reason, code } = determineRequestErrorReason(err)
