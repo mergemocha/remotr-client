@@ -94,11 +94,6 @@ export default class Main extends Vue {
 
       if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE && code === ResponseCode.UNAUTHORIZED) {
         router.push('/login')
-        await axios.post(joinUrl(API_BASE_URL, 'user/login'), {
-          username: 'root',
-          password: 'password'
-        })
-        console.log('HACK: Session token had expired, reload and it will work now')
       } else {
         logHTTPRequestError(err)
       }

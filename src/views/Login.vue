@@ -23,8 +23,9 @@ import axios from 'axios'
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Password from 'primevue/password'
-import logHTTPRequestError from '@/utils/logHTTPRequestError'
-import { API_BASE_URL, joinUrl } from '@/system/apiUtils'
+import logHTTPRequestError from '../utils/logHTTPRequestError'
+import { API_BASE_URL, joinUrl } from '../system/apiUtils'
+import router from '../router'
 
 axios.defaults.withCredentials = true
 
@@ -72,6 +73,7 @@ axios.defaults.withCredentials = true
         if (response.status === 200) {
           console.log(response.statusText)
           this.isInv = false
+          router.push('/')
         }
       } catch (err) {
         if (err.response.status === 400) this.isInv = true

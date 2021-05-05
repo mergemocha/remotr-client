@@ -20,7 +20,7 @@ export default createStore<State>({
     },
     logout (state) {
       state.token = null
-      router.push('login') // Navigate to login
+      router.push('/login') // Navigate to login
     },
     setDaemons (state, daemons: Daemon[]) {
       state.daemons = daemons
