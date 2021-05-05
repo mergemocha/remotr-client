@@ -47,23 +47,28 @@ import { Options, Vue } from 'vue-class-component'
 import { required } from '@vuelidate/validators'
 import { useVuelidate } from '@vuelidate/core'
 import axios from 'axios'
+import Keybinding from 'keybinding'
 
 import InputText from 'primevue/inputtext'
 import Button from 'primevue/button'
 import Password from 'primevue/password'
+
 import logHTTPRequestError from '../utils/logHTTPRequestError'
-import { API_BASE_URL, joinUrl } from '../system/apiUtils'
+import { API_BASE_URL, joinUrl, determineRequestErrorReason, RequestFailureReason, ResponseCode } from '../system/apiUtils'
 import router from '../router'
+import Toast from '../types/Toast'
 
 axios.defaults.withCredentials = true
 
 @Options({
   name: 'login',
+
   components: {
     InputText,
     Button,
     Password
   },
+
   data () {
     return {
       v$: useVuelidate(),
@@ -74,9 +79,9 @@ axios.defaults.withCredentials = true
       isInv: false
     }
   },
-  props: {
-  },
+
   methods: {
+
     validate () {
       this.v$.$validate()
 
@@ -94,6 +99,16 @@ axios.defaults.withCredentials = true
     },
 
     async authenticate () {
+      // Intercepts the response if server is unable to respond to the request.
+      // Using umbrella handler for 'undefined' responses. The response is always
+      // unspecified due to security reasons
+      axios.interceptors.response.use((response) => response, (err) => {
+        if (typeof err.response === 'undefined') {
+          this.$toast.add({ severity: 'error', summary: 'Server Error', detail: 'Server cannot be reached.', life: 3000 })
+        }
+        return Promise.reject(err)
+      })
+
       try {
         const response = await axios({
           method: 'post',
@@ -108,28 +123,65 @@ axios.defaults.withCredentials = true
         })
 
         if (response.status === 200) {
+          this.$toast.add({ severity: 'success', summary: 'Success', detail: 'User authenticated. Logging in.', life: 3000 })
           this.isInv = false
           router.push('/')
         }
       } catch (err) {
-        if (err.response.status === 400) this.isInv = true
+        err.response.status === 400 ? this.isInv = true : this.logError(err)
         logHTTPRequestError(err)
       }
     },
+
     onKeyPress (event: { keyCode: number }, field: string) {
       this.resetInvalidation(field)
       if (event.keyCode === 13) this.validate()
     },
+
     resetInvalidation (field: string) {
       this.isInv = false
       field === 'username' ? this.isUserEmpty = false : this.isPassEmpty = false
+    },
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    logError (err: any) {
+      const { reason, code } = determineRequestErrorReason(err)
+
+      if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE) {
+        const toast: Toast = { severity: 'error', life: 3000 }
+
+        switch (code) {
+          case ResponseCode.UNAUTHORIZED:
+            toast.summary = 'Unauthorized login'
+            toast.detail = 'There was an error in session handling.'
+            break
+          case ResponseCode.TOO_MANY_REQUESTS:
+            toast.summary = 'Too many requests'
+            toast.detail = 'You\'re issuing commands too quickly. Please wait a moment and try again.'
+            break
+          case ResponseCode.INTERNAL_SERVER_ERROR:
+            toast.summary = 'Server error'
+            toast.detail = 'The server reported an unspecified error. Please try again later.'
+            break
+        }
+
+        this.$toast.add(toast)
+      }
     }
   },
+
   validations () {
     return {
       username: { required },
       password: { required }
     }
+  },
+
+  mounted () {
+    const keybinding = new Keybinding()
+    keybinding.on('enter', () => {
+      this.validate()
+    })
   }
 })
 export default class Login extends Vue {}
