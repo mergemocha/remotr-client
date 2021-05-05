@@ -4,7 +4,12 @@
       <h2>Remotr</h2>
     </template>
     <template #right>
-      <Button label="Logout" icon="pi pi-lock" id="logout-button"/>
+      <Button
+        label="Logout"
+        icon="pi pi-lock"
+        id="logout-button"
+        @click="logout"
+      />
     </template>
   </Toolbar>
   <div class="daemon-view p-d-flex p-flex-wrap p-flex-column p-flex-md-row p-jc-center">
@@ -61,6 +66,10 @@ export default class Main extends Vue {
     store.commit('setDaemons', daemons)
     this.hasFetched = true
     this.daemons = daemons
+  }
+
+  logout (): void {
+    store.commit('logout')
   }
 
   async mounted (): Promise<void> {
