@@ -16,7 +16,7 @@
     <div v-if="!hasFetched">
       <DummyDaemon/>
     </div>
-    <div v-else-if="hasFetched && $store.daemons?.length == 0">
+    <div v-else-if="hasFetched && $store.state.daemons?.length === 0">
       <Message severity="success" :closable="false">
         <div class="empty">
           <h3>Hm. There doesn't seem to be anything here.</h3>
@@ -43,7 +43,6 @@ import Daemon from '../components/Daemon.vue'
 import DummyDaemon from '../components/DummyDaemon.vue'
 import CommandSettingsModal from '../components/CommandSettingsModal.vue'
 import { API_BASE_URL, determineRequestErrorReason, joinUrl, RequestFailureReason, ResponseCode } from '../system/apiUtils'
-import store from '../store'
 import logHTTPRequestError from '../utils/logHTTPRequestError'
 import IDaemon from '../types/Daemon'
 import { deleteCookie } from 'cookies-utils'
@@ -63,7 +62,7 @@ export default class Main extends Vue {
   interval: number | undefined = undefined
 
   updateDaemons (daemons: IDaemon[]): void {
-    store.commit('setDaemons', daemons)
+    this.$store.commit('setDaemons', daemons)
     this.hasFetched = true
   }
 
