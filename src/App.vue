@@ -7,13 +7,13 @@
 import './assets/scss/style.scss'
 
 import { Options, Vue } from 'vue-class-component'
-import Login from './components/Login.vue'
+import Login from './views/Login.vue'
 import Main from './views/Main.vue'
 
 @Options({
   components: {
+    Main,
     Login
-    Main
   }
 })
 export default class App extends Vue {}

@@ -10,12 +10,12 @@
     "test:e2e-ci": "vue-cli-service test:e2e --headless --record --key $CYPRESS_KEY"
   },
   "dependencies": {
-    "copy-to-clipboard": "^3.3.1",
     "@coreui/coreui": "^3.4.0",
     "@coreui/vue": "^3.2.9",
     "@vuelidate/core": "*",
     "@vuelidate/validators": "*",
     "axios": "^0.21.1",
+    "copy-to-clipboard": "^3.3.1",
     "core-js": "^3.11.1",
     "primeflex": "^2.0.0",
     "primeicons": "^4.1.0",

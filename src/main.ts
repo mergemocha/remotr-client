@@ -5,7 +5,6 @@ import ToastService from 'primevue/toastservice'
 import App from './App.vue'
 import store from './store'
 import Vuelidate from 'vuelidate'
-import store from './store/index'
 import router from './router'
 
 const app = createApp(App)
