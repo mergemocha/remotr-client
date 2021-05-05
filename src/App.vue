@@ -1,26 +1,24 @@
 <template>
-  <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+  <div>
+    <Main/>
+    <Toast position="bottom-right"/>
+  </div>
 </template>
 
 <script lang="ts">
+import './assets/scss/style.scss'
+
 import { Options, Vue } from 'vue-class-component'
-import HelloWorld from './components/HelloWorld.vue'
+import Toast from 'primevue/toast'
+import Main from './views/Main.vue'
 
 @Options({
   components: {
-    HelloWorld
+    Main,
+    Toast
   }
 })
 export default class App extends Vue {}
 </script>
 
-<style>
-#app {
-  font-family: Avenir, Helvetica, Arial, sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  text-align: center;
-  color: #2c3e50;
-  margin-top: 60px;
-}
-</style>
+<style scoped></style>
