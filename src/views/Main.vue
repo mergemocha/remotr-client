@@ -46,7 +46,6 @@ import { API_BASE_URL, determineRequestErrorReason, joinUrl, RequestFailureReaso
 import store from '../store'
 import logHTTPRequestError from '../utils/logHTTPRequestError'
 import IDaemon from '../types/Daemon'
-import router from '../router'
 
 @Options({
   components: {
