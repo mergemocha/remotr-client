@@ -1,14 +1,15 @@
 <template>
 <div class="login-container">
+  <div class="Title"><h1>Remotr</h1></div>
     <div class="p-field">
-      <InputText id="username" type="text" placeholder="Username" :class="{'p-invalid':isUserEmpty || isInv}" v-model="username"/>
+      <InputText id="username" type="text" placeholder="Username" :class="{'p-invalid':isUserEmpty || isInv}" @keyup="onKeyPress($event, 'username')" v-model="username"/>
       <small v-if="v$.username.$invalid && isUserEmpty" class="p-error">Username required</small>
     </div>
     <div class="p-field">
-      <Password id="password" placeholder="Password" :class="{'p-invalid':isPassEmpty || isInv}" v-model="password" :feedback="false" toggleMask/>
+      <Password id="password" placeholder="Password" :class="{'p-invalid':isPassEmpty || isInv}" @keyup="onKeyPress($event, 'password')" v-model="password" :feedback="false" toggleMask/>
       <small v-if="v$.password.$invalid && isPassEmpty" class="p-error">Password required</small>
     </div>
-    <div class="login-button"><small id="login-invalid-text" v-if="isInv" class="p-error">Username or password is invalid.</small></div>
+    <div class="login-button"><small v-if="isInv" class="p-error">Username or password is invalid.</small></div>
     <Button label="Log in" @click="validate($event)"/>
   </div>
 </template>
@@ -51,8 +52,16 @@ axios.defaults.withCredentials = true
   methods: {
     validate () {
       this.v$.$validate()
-      if (this.v$.username.$error) this.isUserEmpty = true
-      if (this.v$.password.$error) this.isPassEmpty = true
+      if (this.v$.username.$error) {
+        if (!this.v$.password.$error) this.isPassEmpty = false
+        this.isUserEmpty = true
+        this.isInv = false
+      }
+      if (this.v$.password.$error) {
+        if (!this.v$.username.$error) this.isUserEmpty = false
+        this.isPassEmpty = true
+        this.isInv = false
+      }
       if (!this.isUserEmpty && !this.isPassEmpty) this.authenticate()
     },
 
@@ -79,6 +88,14 @@ axios.defaults.withCredentials = true
         if (err.response.status === 400) this.isInv = true
         logHTTPRequestError(err)
       }
+    },
+    onKeyPress (event: { keyCode: number }, field: string) {
+      this.resetInvalidation(field)
+      if (event.keyCode === 13) this.validate()
+    },
+    resetInvalidation (field: string) {
+      this.isInv = false
+      field === 'username' ? this.isUserEmpty = false : this.isPassEmpty = false
     }
   },
   validations () {
@@ -100,8 +117,11 @@ export default class Login extends Vue {}
 
 .login-container {
   width: fit-content;
-  margin: auto;
-  padding: 3%;
+  height: fit-content;
+  position: absolute;
+  top: 50%; right: 0; bottom: 0; left: 50%;
+  transform: translate(-50%, -50%);
+  padding: 2% 3% 3% 3%;
   box-shadow: 0 0.2em 0.4em 0 rgba(0, 0, 0, 0.2);
   text-align: center;
   font-family: Roboto, Helvetica Neue Light, Helvetica Neue, Helvetica, Arial, Lucida Grande, sans-serif;
@@ -120,8 +140,6 @@ export default class Login extends Vue {}
 
   .login-button {
     display: block;
+    margin-bottom: 5%;
   }
-    #login-invalid-text {
-      margin-bottom: 5em !important;
-    }
 </style>
