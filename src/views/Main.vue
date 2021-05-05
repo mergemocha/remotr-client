@@ -4,7 +4,12 @@
       <h2>Remotr</h2>
     </template>
     <template #right>
-      <Button label="Logout" icon="pi pi-lock" id="logout-button"/>
+      <Button
+        label="Logout"
+        icon="pi pi-lock"
+        id="logout-button"
+        @click="logout"
+      />
     </template>
   </Toolbar>
   <div class="daemon-view p-d-flex p-flex-wrap p-flex-column p-flex-md-row p-jc-center">
@@ -41,7 +46,6 @@ import { API_BASE_URL, determineRequestErrorReason, joinUrl, RequestFailureReaso
 import store from '../store'
 import logHTTPRequestError from '../utils/logHTTPRequestError'
 import IDaemon from '../types/Daemon'
-import router from '../router/index'
 
 @Options({
   components: {
@@ -62,6 +66,10 @@ export default class Main extends Vue {
     store.commit('setDaemons', daemons)
     this.hasFetched = true
     this.daemons = daemons
+  }
+
+  logout (): void {
+    store.commit('logout')
   }
 
   async mounted (): Promise<void> {
@@ -93,7 +101,13 @@ export default class Main extends Vue {
       const { reason, code } = determineRequestErrorReason(err)
 
       if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE && code === ResponseCode.UNAUTHORIZED) {
-        router.push('/login')
+        // FIXME: Temp
+        // router.push('/login')
+        await axios.post(joinUrl(API_BASE_URL, 'user/login'), {
+          username: 'root',
+          password: 'password'
+        })
+        console.log('HACK: Session token had expired, reload and it will work now')
       } else {
         logHTTPRequestError(err)
       }

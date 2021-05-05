@@ -11,25 +11,25 @@
         <CopyableProperty
           class="property p-m-1"
           property="IP"
-          v-bind:value="ip"
+          :value="ip"
           icon="pi pi-sitemap"
         />
         <CopyableProperty
           class="property p-m-1"
           property="MAC"
-          v-bind:value="mac"
+          :value="mac"
           icon="pi pi-desktop"
         />
         <CopyableProperty
           class="property p-m-1"
           property="User"
-          v-bind:value="user"
+          :value="user"
           icon="pi pi-user"
         />
         <CopyableProperty
           class="property p-m-1"
           property="Hostname"
-          v-bind:value="hostname"
+          :value="hostname"
           icon="pi pi-home"
         />
       </div>
@@ -43,32 +43,37 @@
           class="action-button p-m-1 p-button-success"
           icon="pi pi-power-off"
           label="Boot"
+          @click="runQuickAction('boot')"
         />
         <ActionButton
           split="true"
           class="action-button p-m-1 p-button-info"
           icon="pi pi-lock"
           label="Log out"
-          v-bind:items="items"
+          :items="items"
+          @click="runQuickAction('logout')"
         />
         <ActionButton
           split="true"
           class="action-button p-m-1 p-button-warning"
           icon="pi pi-refresh"
           label="Reboot"
-          v-bind:items="items"
+          :items="items"
+          @click="runQuickAction('reboot')"
         />
         <ActionButton
           split="true"
           class="action-button p-m-1 p-button-danger"
           icon="pi pi-power-off"
           label="Shutdown"
-          v-bind:items="items"
+          :items="items"
+          @click="runQuickAction('shutdown')"
         />
         <ActionButton
           class="action-button p-m-1 p-button-help"
           icon="pi pi-refresh"
           label="Restart daemon"
+          @click="runQuickAction('restart')"
         />
       </div>
     </template>
@@ -109,70 +114,77 @@ export default class Daemon extends Vue.with(Props) {
     }
   ]
 
-  async runQuickAction (action: DaemonOp): Promise<void> {
-    try {
-      const toast: Toast = { severity: 'success', summary: 'Success', life: 3000 }
+  runQuickAction (action: DaemonOp): void {
+    // Having to do this the old-fashioned way because we can't use async/await in Vue renders
+    switch (action) {
+      case 'boot':
+        boot(this.mac)
+          .then(() => this.logActionSuccess(`Boot packet sent to ${this.user}@${this.hostname} (${this.mac}).`))
+          .catch(err => this.logActionError(err))
+        break
+      case 'logout':
+        logout(this.mac)
+          .then(() => this.logActionSuccess(`Logout request sent to ${this.user}@${this.hostname} (${this.mac}).`))
+          .catch(err => this.logActionError(err))
+        break
+      case 'reboot':
+        reboot(this.mac)
+          .then(() => this.logActionSuccess(`Reboot request sent to ${this.user}@${this.hostname} (${this.mac}).`))
+          .catch(err => this.logActionError(err))
+        break
+      case 'shutdown':
+        shutdown(this.mac)
+          .then(() => this.logActionSuccess(`Shutdown request sent to ${this.user}@${this.hostname} (${this.mac}).`))
+          .catch(err => this.logActionError(err))
+        break
+      case 'restart':
+        restart(this.mac)
+          .then(() => this.logActionSuccess(`Daemon restart issued on ${this.user}@${this.hostname} (${this.mac}).`))
+          .catch(err => this.logActionError(err))
+        break
+    }
+  }
 
-      switch (action) {
-        case 'boot':
-          await boot(this.mac)
-          toast.detail = `Boot packet sent to ${this.user}@${this.hostname} (${this.mac}).`
+  logActionSuccess (message: string): void {
+    this.$toast.add({ severity: 'success', summary: 'Success', detail: message, life: 3000 })
+  }
+
+  // eslint-disable-next-line @typescript-eslint/explicit-module-boundary-types, @typescript-eslint/no-explicit-any
+  logActionError (err: any): void {
+    const { reason, code } = determineRequestErrorReason(err)
+
+    if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE) {
+      const toast: Toast = { severity: 'error', life: 3000 }
+
+      switch (code) {
+        case ResponseCode.UNAUTHORIZED:
+          toast.summary = 'Session expired'
+          toast.detail = 'Your session has expired, and you will need to log in again. Logging out in 3 seconds...'
+          setTimeout(() => store.commit('logout'), 3000)
           break
-        case 'logout':
-          await logout(this.mac)
-          toast.detail = `Logout request sent to ${this.user}@${this.hostname} (${this.mac}).`
+        case ResponseCode.NOT_FOUND:
+          toast.summary = 'Daemon not found'
+          toast.detail = `Daemon ${this.user}@${this.hostname} (${this.mac}) not found. The daemon may have been deregistered.`
           break
-        case 'reboot':
-          await reboot(this.mac)
-          toast.detail = `Reboot request sent to ${this.user}@${this.hostname} (${this.mac}).`
+        case ResponseCode.TOO_MANY_REQUESTS:
+          toast.summary = 'Too many requests'
+          toast.detail = 'You\'re issuing commands too quickly. Please wait a moment and try again.'
           break
-        case 'shutdown':
-          await shutdown(this.mac)
-          toast.detail = `Shutdown request sent to ${this.user}@${this.hostname} (${this.mac}).`
+        case ResponseCode.INTERNAL_SERVER_ERROR:
+          toast.summary = 'Server error'
+          toast.detail = 'The server reported an unspecified error. Please try again later.'
           break
-        case 'restart':
-          await restart(this.mac)
-          toast.detail = `Daemon restart issued on ${this.user}@${this.hostname} (${this.mac}).`
+        case ResponseCode.ORIGIN_IS_UNREACHABLE:
+          toast.summary = 'Daemon is unreachable'
+          toast.detail = 'The daemon is not responding, and is probably offline.'
+          break
+        case ResponseCode.DAEMON_RETURNED_ERROR:
+          toast.summary = 'Daemon reported error'
+          toast.detail = `The daemon reported that your request could not be fulfilled. Details: ${err.response.data.error}`
           break
       }
 
       this.$toast.add(toast)
-    } catch (err) {
-      const { reason, code } = determineRequestErrorReason(err)
-
-      if (reason === RequestFailureReason.RECEIVED_ERROR_RESPONSE) {
-        const toast: Toast = { severity: 'error', life: 3000 }
-
-        switch (code) {
-          case ResponseCode.UNAUTHORIZED:
-            toast.summary = 'Session expired'
-            toast.detail = 'Your session has expired, and you will need to log in again. Logging out in 3 seconds...'
-            setTimeout(() => store.commit('logout'), 3000)
-            break
-          case ResponseCode.NOT_FOUND:
-            toast.summary = 'Daemon not found'
-            toast.detail = `Daemon ${this.user}@${this.hostname} (${this.mac}) not found. The daemon may have been deregistered.`
-            break
-          case ResponseCode.TOO_MANY_REQUESTS:
-            toast.summary = 'Too many requests'
-            toast.detail = 'You\'re issuing commands too quickly. Please wait a moment and try again.'
-            break
-          case ResponseCode.INTERNAL_SERVER_ERROR:
-            toast.summary = 'Server error'
-            toast.detail = 'The server reported an unspecified error. Please try again later.'
-            break
-          case ResponseCode.ORIGIN_IS_UNREACHABLE:
-            toast.summary = 'Daemon is unreachable'
-            toast.detail = 'The daemon is not responding, and is probably offline.'
-            break
-          case ResponseCode.DAEMON_RETURNED_ERROR:
-            toast.summary = 'Daemon reported error'
-            toast.detail = `The daemon reported that your request could not be fulfilled. Details: ${err.response.data.error}`
-            break
-        }
-
-        this.$toast.add(toast)
-      }
     }
   }
 }
