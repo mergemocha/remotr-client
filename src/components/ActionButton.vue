@@ -1,14 +1,14 @@
 <template>
   <SplitButton
     v-if="split"
-    v-bind:icon="icon"
-    v-bind:label="label"
-    v-bind:model="items"
+    :icon="icon"
+    :label="label"
+    :model="items"
   />
   <Button
     v-else
-    v-bind:icon="icon"
-    v-bind:label="label"
+    :icon="icon"
+    :label="label"
   />
 </template>
 

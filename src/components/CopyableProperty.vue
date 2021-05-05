@@ -1,7 +1,7 @@
 <template>
   <Button
-    v-bind:label="label"
-    v-bind:icon="icon"
+    :label="label"
+    :icon="icon"
     v-tooltip.top="'Click to copy...'"
     v-on:click="copy"
   />
