@@ -15,7 +15,7 @@
     "axios": "^0.21.1",
     "cookies-utils": "^1.0.0",
     "copy-to-clipboard": "^3.3.1",
-    "core-js": "^3.11.1",
+    "core-js": "^3.12.0",
     "keybinding": "*",
     "primeflex": "^2.0.0",
     "primeicons": "^4.1.0",
